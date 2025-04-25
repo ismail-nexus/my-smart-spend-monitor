@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { CalendarIcon, Upload } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { 
   Popover,
   PopoverContent,
@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 const AddExpense: React.FC = () => {
-  const { addExpense, categories } = useData();
+  const { addExpense, categories, wallet } = useData();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -28,7 +28,6 @@ const AddExpense: React.FC = () => {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date>(new Date());
-  const [receipt, setReceipt] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,7 +50,6 @@ const AddExpense: React.FC = () => {
         category,
         description,
         date,
-        receipt: receipt || undefined,
       });
       
       toast({
@@ -59,7 +57,7 @@ const AddExpense: React.FC = () => {
         description: "Your expense has been recorded successfully.",
       });
       
-      navigate("/expenses");
+      navigate("/app/expenses");
     } catch (error) {
       console.error("Error adding expense:", error);
       toast({
@@ -70,17 +68,6 @@ const AddExpense: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-  
-  const handleReceiptUpload = () => {
-    // Simulate receipt upload - in a real app this would connect to a file upload API
-    const mockReceiptUrl = "receipt-" + Date.now() + ".jpg";
-    setReceipt(mockReceiptUrl);
-    
-    toast({
-      title: "Receipt uploaded",
-      description: "Your receipt has been uploaded successfully.",
-    });
   };
   
   return (
@@ -97,7 +84,9 @@ const AddExpense: React.FC = () => {
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-muted-foreground">$</span>
+                <span className="absolute left-3 top-2.5 text-muted-foreground">
+                  {wallet.currency === "USD" ? "$" : wallet.currency}
+                </span>
                 <Input 
                   id="amount"
                   type="number"
@@ -166,25 +155,6 @@ const AddExpense: React.FC = () => {
               </Popover>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="receipt">Receipt (Optional)</Label>
-              <div className="flex items-center gap-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleReceiptUpload}
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Receipt
-                </Button>
-                {receipt && (
-                  <p className="text-sm text-muted-foreground">
-                    Receipt uploaded
-                  </p>
-                )}
-              </div>
-            </div>
-            
             <div className="flex gap-4 pt-4">
               <Button 
                 type="submit" 
@@ -196,7 +166,7 @@ const AddExpense: React.FC = () => {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/app/dashboard")}
               >
                 Cancel
               </Button>
